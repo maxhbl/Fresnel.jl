@@ -2,9 +2,11 @@ module Fresnel
 
 using PythonCall
 
+const fresnel = PythonCall.pynew()
 include("utils.jl")
+
 function __init__()
-    @eval const fresnel = pyimport("fresnel")
+    PythonCall.pycopy!(fresnel, pyimport("fresnel"))
 end
 
 export Scene, 
@@ -39,7 +41,6 @@ abstract type AbstractMaterial end
 abstract type AbstractGeometry end
 abstract type AbstractTracer end
 
-
 @pywraptype Orthographic fresnel.camera AbstractCamera
 @pywraptype Perspective fresnel.camera AbstractCamera
 position!(c::AbstractCamera, pos::AbstractVector) = pysetattr(getfield(c, :pyobj), "position", pos)
@@ -53,14 +54,12 @@ depthoffield!(c::Perspective, dof::Real) = pysetattr(getfield(c, :pyobj), "depth
 focuson!(c::Perspective, focuson::AbstractVector) = pysetattr(getfield(c, :pyobj), "focus_on", focuson)
 verticalFOV!(c::Perspective, fov::Real) = pysetattr(getfield(c, :pyobj), "vertical_field_of_view", fov)
 
-
 @pywraptype Light fresnel.light AbstractLight
 @pywraptype _LightProxy fresnel.light AbstractLight
 @pywraptype _LightListProxy fresnel.light AbstractLight
 direction!(l::AbstractLight, dir::AbstractVector) = pysetattr(getfield(l, :pyobj), "direction", dir)
 color!(l::AbstractLight, color::AbstractVector) = pysetattr(getfield(l, :pyobj), "color", color)
 theta!(l::AbstractLight, θ::Real) = pysetattr(getfield(l, :pyobj), "theta", θ)
-
 
 @pywraptype Material fresnel.material AbstractMaterial
 @pywraptype _MaterialProxy fresnel.material AbstractMaterial
@@ -72,7 +71,6 @@ roughness!(m::AbstractMaterial, v::Real) = pysetattr(getfield(m, :pyobj), "rough
 specular!(m::AbstractMaterial, v::Real) = pysetattr(getfield(m, :pyobj), "specular", v)
 spectrans!(m::AbstractMaterial, v::Real) = pysetattr(getfield(m, :pyobj), "spec_trans", v)
 metal!(m::AbstractMaterial, v::Real) = pysetattr(getfield(m, :pyobj), "metal", v)
-
 
 @pywraptype Cylinder fresnel.geometry AbstractGeometry
 @pywraptype Box fresnel.geometry AbstractGeometry
@@ -89,7 +87,6 @@ function position!(g::AbstractGeometry, pos::AbstractArray)
     end
     return
 end
-
 material!(g::AbstractGeometry, material::Material) = pysetattr(getfield(g, :pyobj), "material", material)
 outlinematerial!(g::AbstractGeometry, material::Material) = pysetattr(getfield(g, :pyobj), "outline_material", material)
 outlinewidth!(g::AbstractGeometry, width::Real) = pysetattr(getfield(g, :pyobj), "outline_width", width)
@@ -98,12 +95,10 @@ boxcolor!(g::Box, color::AbstractVector) = pysetattr(getfield(g, :pyobj), "box_c
 boxradius!(g::Box, r::Real) = pysetattr(getfield(g, :pyobj), "box_radius", r)
 colorbyface!(g::ConvexPolyhedron, color::AbstractVector) = pysetattr(getfield(g, :pyobj), "color_by_face", color)
 
-
 @pywraptype Preview fresnel.tracer AbstractTracer
 @pywraptype Path fresnel.tracer AbstractTracer
 seed!(t::AbstractTracer, v::Number) = pysetattr(getfield(t, :pyobj), "seed", v)
 antialias!(t::Preview, v::Bool) = pysetattr(getfield(t, :pyobj), "anti_alias", v)
-
 
 @pywraptype Scene fresnel
 camera!(s::Scene, camera::AbstractCamera) = pysetattr(getfield(s, :pyobj), "camera", getfield(camera, :pyobj))
@@ -111,16 +106,12 @@ backgroundcolor!(s::Scene, color::AbstractVector) = pysetattr(getfield(s, :pyobj
 backgroundalpha!(s::Scene, alpha::Real) = pysetattr(getfield(s, :pyobj), "background_alpha", alpha)
 lights!(s::Scene, light::Light) = pysetattr(getfield(s, :pyobj), "lights", light)
 
-
 @pywraptype Device fresnel
-
 
 @pywraptype ImageArray fresnel.util
 Base.display(iarr::ImageArray) = display(getfield(iarr, :pyobj))
 
-
 PythonCall.pyconvert_add_rule("fresnel.util:Array", Array, (T, x)->pyconvert(T, x.buf))
-
 
 function linear_color(color)
     return pyconvert(Vector, fresnel.color.linear(color))
