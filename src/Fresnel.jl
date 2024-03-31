@@ -34,7 +34,7 @@ export Scene,
     color, color!, color_by_face, color_by_face!, angle, angle!,
     orientation, orientation!, enable!, disable!, remove!, extents,
 
-    color_linear, fit_camera, preview, pathtrace, image_array, pyglobals
+    color_linear, fit_camera, preview, pathtrace, image_data
 
 
 const fresnel = PythonCall.pynew()
