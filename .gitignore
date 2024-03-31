@@ -2,3 +2,4 @@
 test/debug.jl
 .CondaPkg
 Manifest.toml
+default.profraw
