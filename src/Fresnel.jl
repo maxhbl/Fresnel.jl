@@ -10,30 +10,37 @@ function __init__()
 end
 
 export Scene, 
-    camera!, backgroundalpha!, backgroundcolor!, lights!,
+    camera, camera!, background_alpha, background_alpha!,
+    background_color, background_color!, lights, lights!,
+    extents,
 
     Device,
+    mode,
 
     Tracer, Preview, Path,
-    seed!, antialias!,
+    seed, seed!, anti_alias, anti_alias!,
 
     Orthographic, Perspective,
-    position!, lookat!, updir!, height!,
-    focallength!, fstop!, focusdistance!,
-    depthoffield!, focuson!, verticalFOV!,
+    basis, pos, pos!, look_at, look_at!, up_dir, up_dir!,
+    height, height!, focal_length, focal_length!, f_stop, 
+    f_stop!, focus_distance, focus_distance!, depth_of_field,
+    depth_of_field!, focus_on, focus_on!, vertical_FOV, vertical_FOV!,
 
     Material, 
-    solid!, primitivecolormix!, color!, roughness!,
-    specular!, spectrans!, metal!,    
+    solid, solid!, primitive_colormix, primitive_colormix!, color, color!,
+    roughness, roughness!, specular, specular!, spec_trans, spec_trans!,
+    metal, metal!,    
 
     Light,
-    direction!, color!, theta!,
+    direction, direction!, color, color!, theta, theta!,
 
     Cylinder, Box, Polygon, Sphere, Mesh, ConvexPolyhedron,
-    material!, outlinematerial!, outlinewidth!, box!, boxcolor!,
-    boxradius!, colorbyface!,
+    material, material!, outline_material,outline_material!,
+    outline_width, outline_width!, box, box!, radius, radius!,
+    color, color!, color_by_face, color_by_face!, angle, angle!,
+    orientation, orientation!, enable!, disable!, remove!, extents,
 
-    linear_color, orthographic_fit, preview, pathtrace
+    linear_color, fit_camera, preview, pathtrace
 
 abstract type AbstractCamera end
 abstract type AbstractLight end
@@ -43,34 +50,55 @@ abstract type AbstractTracer end
 
 @pywraptype Orthographic fresnel.camera AbstractCamera
 @pywraptype Perspective fresnel.camera AbstractCamera
-position!(c::AbstractCamera, pos::AbstractVector) = pysetattr(getfield(c, :pyobj), "position", pos)
-lookat!(c::AbstractCamera, lookat::AbstractVector) = pysetattr(getfield(c, :pyobj), "look_at", lookat)
-updir!(c::AbstractCamera, up::AbstractVector) = pysetattr(getfield(c, :pyobj), "up", up)
-height!(c::AbstractCamera, height::Real) = pysetattr(getfield(c, :pyobj), "height", height)
-focallength!(c::Perspective, f::Real) = pysetattr(getfield(c, :pyobj), "focal_length", f)
-fstop!(c::Perspective, f::Real) = pysetattr(getfield(c, :pyobj), "f_stop", f)
-focusdistance!(c::Perspective, dist::Real) = pysetattr(getfield(c, :pyobj), "focus_distance", dist)
-depthoffield!(c::Perspective, dof::Real) = pysetattr(getfield(c, :pyobj), "depth_of_field", dof)
-focuson!(c::Perspective, focuson::AbstractVector) = pysetattr(getfield(c, :pyobj), "focus_on", focuson)
-verticalFOV!(c::Perspective, fov::Real) = pysetattr(getfield(c, :pyobj), "vertical_field_of_view", fov)
+basis(c::AbstractCamera) = pyconvertfield(c, "basis", Array)
+pos(c::AbstractCamera) = pyconvertfield(c, "position", Vector)
+pos!(c::AbstractCamera, val::AbstractVector) = pysetfield!(c, "position", val)
+look_at(c::AbstractCamera) = pyconvertfield(c, "look_at", Vector)
+look_at!(c::AbstractCamera, val::AbstractVector) = pysetfield!(c, "look_at", val)
+up_dir(c::AbstractCamera) = pyconvertfield(c, "up", Vector)
+up_dir!(c::AbstractCamera, val::AbstractVector) = pysetfield!(c, "up", val)
+height(c::AbstractCamera) = pyconvertfield(c, "height", Real)
+height!(c::AbstractCamera, val::Real) = pysetfield!(c, "height", val)
+focal_length(c::Perspective) = pyconvertfield(c, "focal_length", Real)
+focal_length!(c::Perspective, val::Real) = pysetfield!(c, "focal_length", val)
+f_stop(c::Perspective) = pyconvertfield(c, "f_stop", Real)
+f_stop!(c::Perspective, val::Real) = pysetfield!(c, "f_stop", val)
+focus_distance(c::Perspective) = pyconvertfield(c, "focus_distance", Real)
+focus_distance!(c::Perspective, val::Real) = pysetfield!(c, "focus_distance", val)
+depth_of_field(c::Perspective) = pyconvertfield(c, "depth_of_field", Real)
+depth_of_field!(c::Perspective, val::Real) = pysetfield!(c, "depth_of_field", val)
+focus_on(c::Perspective) = pyconvertfield(c, "focus_on", Vector)
+focus_on!(c::Perspective, val::AbstractVector) = pysetfield!(c, "focus_on", val)
+vertical_FOV(c::Perspective) = pyconvertfield(c, "vertical_field_of_view", Real)
+vertical_FOV!(c::Perspective, val::Real) = pysetfield!(c, "vertical_field_of_view", val)
 
 @pywraptype Light fresnel.light AbstractLight
 @pywraptype _LightProxy fresnel.light AbstractLight
-@pywraptype _LightListProxy fresnel.light AbstractLight
-direction!(l::AbstractLight, dir::AbstractVector) = pysetattr(getfield(l, :pyobj), "direction", dir)
-color!(l::AbstractLight, color::AbstractVector) = pysetattr(getfield(l, :pyobj), "color", color)
-theta!(l::AbstractLight, θ::Real) = pysetattr(getfield(l, :pyobj), "theta", θ)
+@pywraptype _LightListProxy fresnel.light
+direction(l::AbstractLight) = pyconvertfield(l, "direction", Vector)
+direction!(l::AbstractLight, val::AbstractVector) = pysetfield!(l, "direction", val)
+color(l::AbstractLight) = pyconvertfield(l, "color", Vector)
+color!(l::AbstractLight, val::AbstractVector) = pysetfield!(l, "color", val)
+theta(l::AbstractLight) = pyconvertfield(l, "color", Real)
+theta!(l::AbstractLight, val::Real) = pysetfield!(l, "theta", val)
 
 @pywraptype Material fresnel.material AbstractMaterial
 @pywraptype _MaterialProxy fresnel.material AbstractMaterial
 @pywraptype _OutlineMaterialProxy fresnel.material AbstractMaterial
-solid!(m::AbstractMaterial, v::Real) = pysetattr(getfield(m, :pyobj), "solid", v)
-primitivecolormix!(m::AbstractMaterial, v::Real) = pysetattr(getfield(m, :pyobj), "primitive_color_mix", v)
-color!(m::AbstractMaterial, color::AbstractVector) = pysetattr(getfield(m, :pyobj), "color", color)
-roughness!(m::AbstractMaterial, v::Real) = pysetattr(getfield(m, :pyobj), "roughness", v)
-specular!(m::AbstractMaterial, v::Real) = pysetattr(getfield(m, :pyobj), "specular", v)
-spectrans!(m::AbstractMaterial, v::Real) = pysetattr(getfield(m, :pyobj), "spec_trans", v)
-metal!(m::AbstractMaterial, v::Real) = pysetattr(getfield(m, :pyobj), "metal", v)
+solid(m::AbstractMaterial) = pyconvertfield(m, "solid", Real)
+solid!(m::AbstractMaterial, val::Real) = pysetfield!(m, "solid", val)
+primitive_colormix(m::AbstractMaterial) = pyconvertfield(m, "primitive_color_mix!", Real)
+primitive_colormix!(m::AbstractMaterial, val::Real) = pysetfield!(m, "primitive_color_mix", val)
+color(m::AbstractMaterial) = pyconvertfield(m, "color", Vector)
+color!(m::AbstractMaterial, val::AbstractVector) = pysetfield!(m, "color", val)
+roughness(m::AbstractMaterial) = pyconvertfield(m, "roughness", Real)
+roughness!(m::AbstractMaterial, val::Real) = pysetfield!(m, "roughness", val)
+specular(m::AbstractMaterial) = pyconvertfield(m, "specular", Real)
+specular!(m::AbstractMaterial, val::Real) = pysetfield!(m, "specular", val)
+spec_trans(m::AbstractMaterial) = pyconvertfield(m, "spec_trans", Real)
+spec_trans!(m::AbstractMaterial, val::Real) = pysetfield!(m, "spec_trans", val)
+metal(m::AbstractMaterial) = pyconvertfield(m, "metal", Real)
+metal!(m::AbstractMaterial, val::Real) = pysetfield!(m, "metal", val)
 
 @pywraptype Cylinder fresnel.geometry AbstractGeometry
 @pywraptype Box fresnel.geometry AbstractGeometry
@@ -78,35 +106,70 @@ metal!(m::AbstractMaterial, v::Real) = pysetattr(getfield(m, :pyobj), "metal", v
 @pywraptype Sphere fresnel.geometry AbstractGeometry
 @pywraptype Mesh fresnel.geometry AbstractGeometry
 @pywraptype ConvexPolyhedron fresnel.geometry AbstractGeometry
-function position!(g::AbstractGeometry, pos::AbstractArray)
-    p = getfield(g, :pyobj).position
-    n, d = pyconvert(Tuple, p.shape)
-    @assert size(pos) == (n, d)
-    for i in 1:n
-        p[i-1] = pos[i, :]
-    end
-    return
-end
-material!(g::AbstractGeometry, material::Material) = pysetattr(getfield(g, :pyobj), "material", material)
-outlinematerial!(g::AbstractGeometry, material::Material) = pysetattr(getfield(g, :pyobj), "outline_material", material)
-outlinewidth!(g::AbstractGeometry, width::Real) = pysetattr(getfield(g, :pyobj), "outline_width", width)
-box!(g::Box, box::AbstractVector) = pysetattr(getfield(g, :pyobj), "box", box)
-boxcolor!(g::Box, color::AbstractVector) = pysetattr(getfield(g, :pyobj), "box_color", color)
-boxradius!(g::Box, r::Real) = pysetattr(getfield(g, :pyobj), "box_radius", r)
-colorbyface!(g::ConvexPolyhedron, color::AbstractVector) = pysetattr(getfield(g, :pyobj), "color_by_face", color)
+enable!(g::AbstractGeometry) = pyconvert(Any, g.enable())
+disable!(g::AbstractGeometry) = pyconvert(Any, g.disable())
+remove!(g::AbstractGeometry) = pyconvert(Any, g.remove())
+extents(g::AbstractGeometry) = pyconvert(Array, g.get_extents())
+
+pos(g::AbstractGeometry) = pyconvertfield(g, "position", Array)
+pos(g::Cylinder) = points(g)
+pos!(g::AbstractGeometry, val::AbstractArray) = pyslicefield!(g, "position", val)
+pos!(g::Cylinder, val::AbstractArray) = points!(g, val)
+
+points(g::Cylinder) = pyconvertfield(g, "points", Array)
+points!(g::Cylinder, val::AbstractArray) = pyslicefield!(g, "points", val)
+
+radius(g::Cylinder) = pyconvertfield(g, "radius", Vector)
+radius!(g::Cylinder, val::AbstractVector) = pyslicefield!(g, "radius", val)
+radius(g::Sphere) = pyconvertfield(g, "radius", Vector)
+radius!(g::Sphere, val::AbstractVector) = pyslicefield!(g, "radius", val)
+radius(g::Box) = pysetfield!(g, "box_radius", Real)
+radius!(g::Box, val::Real) = pysetfield!(g, "box_radius", val)
+
+color(g::AbstractGeometry) = pyconvertfield(g, "color", Array)
+color!(g::AbstractGeometry, val::AbstractArray) = pyslicefield!(g, "color", val)
+color(g::Box) = pyconvertfield(g, "box_color", Vector)
+color!(g::Box, val::AbstractVector) = pysetfield!(g, "box_color", val)
+
+angle(g::Polygon) = pyconvertfield(g, "angle", Vector)
+angle!(g::Polygon, val::AbstractVector) = pyslicefield!(g, "angle", val)
+orientation(g::Mesh) = pyconvertfield(g, "orientation", Array)
+orientation!(g::Mesh, val::AbstractArray) = pyslicefield!(g, "orientation", val)
+orientation(g::ConvexPolyhedron) = pyconvertfield(g, "orientation", Array)
+orientation!(g::ConvexPolyhedron, val::AbstractArray) = pyslicefield!(g, "orientation", val)
+
+material(g::AbstractGeometry) = pyconvertfield(g, "material", Material)
+material!(g::AbstractGeometry, val::Material) = pysetfield!(g, "material", val)
+outline_material(g::AbstractGeometry) = pyconvertfield(g, "outline_material", Material)
+outline_material!(g::AbstractGeometry, val::Material) = pysetfield!(g, "outline_material", val)
+outline_width(g::AbstractGeometry) = pyconvertfield(g, "outline_width", Real)
+outline_width!(g::AbstractGeometry, val::Real) = pysetfield!(g, "outline_width", val)
+box(g::Box) = pyconvertfield(g, "box", Vector)
+box!(g::Box, val::AbstractVector) = pysetfield!(g, "box", val)
+color_by_face(g::ConvexPolyhedron) = pyconvertfield(g, "color_by_face", Vector)
+color_by_face!(g::ConvexPolyhedron, val::AbstractVector) = pysetfield!(g, "color_by_face", val)
 
 @pywraptype Preview fresnel.tracer AbstractTracer
 @pywraptype Path fresnel.tracer AbstractTracer
-seed!(t::AbstractTracer, v::Number) = pysetattr(getfield(t, :pyobj), "seed", v)
-antialias!(t::Preview, v::Bool) = pysetattr(getfield(t, :pyobj), "anti_alias", v)
+seed(t::AbstractTracer) = pyconvertfield(t, "seed", Number)
+seed!(t::AbstractTracer, val::Number) = pysetfield!(t, "seed", val)
+anti_alias(t::AbstractTracer) = pyconvertfield(t, "anti_alias", Bool)
+anti_alias!(t::Preview, val::Bool) = pysetfield!(t, "anti_alias", val)
 
 @pywraptype Scene fresnel
-camera!(s::Scene, camera::AbstractCamera) = pysetattr(getfield(s, :pyobj), "camera", getfield(camera, :pyobj))
-backgroundcolor!(s::Scene, color::AbstractVector) = pysetattr(getfield(s, :pyobj), "background_color", color)
-backgroundalpha!(s::Scene, alpha::Real) = pysetattr(getfield(s, :pyobj), "background_alpha", alpha)
-lights!(s::Scene, light::Light) = pysetattr(getfield(s, :pyobj), "lights", light)
+extents(s::Scene) = pyconvert(Array, s.get_extents())
+camera(s::Scene) = pyconvertfield(s, "camera", AbstractCamera)
+camera!(s::Scene, val::AbstractCamera) = pysetfield!(s, "camera", getfield(val, :pyobj))
+background_color(s::Scene) = pyconvertfield(s, "background_color", Vector)
+background_color!(s::Scene, val::AbstractVector) = pysetfield!(s, "background_color", val)
+background_alpha(s::Scene) = pyconvertfield(s, "background_alpha", Real)
+background_alpha!(s::Scene, val::Real) = pysetfield!(s, "background_alpha", val)
+background_alpha(s::Scene) = pyconvertfield(s, "lights", Real)
+lights(s::Scene) = pyconvertfield(s, "lights", _LightListProxy)
+lights!(s::Scene, val::AbstractVector{<:AbstractLight}) = pysetfield!(s, "lights", getfield(val, :pyobj))
 
 @pywraptype Device fresnel
+mode(d::Device) = pyconvert(String, d.mode)
 
 @pywraptype ImageArray fresnel.util
 Base.display(iarr::ImageArray) = display(getfield(iarr, :pyobj))
@@ -116,7 +179,7 @@ PythonCall.pyconvert_add_rule("fresnel.util:Array", Array, (T, x)->pyconvert(T, 
 function linear_color(color)
     return pyconvert(Vector, fresnel.color.linear(color))
 end
-function orthographic_fit(scene::Scene)
+function fit_camera(::Type{Orthographic}, scene::Scene)
     return Orthographic(fresnel.camera.Orthographic.fit(scene))
 end
 function preview(scene::Scene; kwargs...)

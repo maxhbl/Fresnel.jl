@@ -22,7 +22,7 @@ macro pywraptype(type_name, module_name, supertype=Any)
             return $type_name(pyobj)
         end
 
-        Base.show(io::Core.IO, ::$type_name) = println(io, $type_string)
+        Base.show(io::Core.IO, x::$type_name) = println(io, getfield(x, :pyobj).__repr__())
         Base.getproperty(x::$type_name, f::Symbol) = pyconvert(Any, pygetattr(getfield(x, :pyobj), String(f)))
         ispy(x::$type_name) = true
         Py(x::$type_name) = getfield(x, :pyobj)
@@ -31,3 +31,22 @@ macro pywraptype(type_name, module_name, supertype=Any)
     end
 end
 
+function slice_assign!(A::Py, val::AbstractMatrix)
+    n, d = pyconvert(Tuple, A.shape)
+    @assert size(val) == (n, d)
+    for i in 1:n
+        A[i-1] = val[i, :]
+    end
+end
+
+function pyconvertfield(X, field_name::String, convert_type::Type=Any)
+    return pyconvert(convert_type, pygetattr(getfield(X, :pyobj), field_name))
+end
+function pysetfield!(X, field_name::String, val::Any)
+    return pysetattr(getfield(X, :pyobj), field_name, val)
+end
+function pyslicefield!(X, field_name::String, val::Any)
+    f = pygetattr(getfield(X, :pyobj), field_name)
+    slice_assign!(f, val)
+    return
+end
