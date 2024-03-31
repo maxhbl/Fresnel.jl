@@ -16,13 +16,15 @@ Fresnel.jl is a simple wrapper around the [fresnel](https://github.com/glotzerla
 scene = Scene()
 
 # ╔═╡ 9a187199-863c-4d80-9c4a-bfe379f6e991
-geometry = Sphere(scene, N=8, radius=1.0)
+spheres = add_geometry!(scene, :sphere, N=8, radius=1.0)
+# This is equivalent to:
+# spheres = Sphere(scene, N=8, radius=1.0)
 
 # ╔═╡ ab03c323-750b-4e04-b6ef-7e7d062aa304
 md"Note that to avoid collisions with `Base.position`, methods to access position attributes are named `pos` / `pos!`. Below we set the positions of the eight spheres using `pos!`:"
 
 # ╔═╡ 992fce87-4ee4-4500-b67d-e8ef10aae971
-pos!(geometry, [ 1  1  1;
+pos!(spheres, [ 1  1  1;
 	  			 1  1 -1;
 	 			 1 -1  1;
 				 1 -1 -1;
@@ -35,13 +37,13 @@ pos!(geometry, [ 1  1  1;
 md"We can inspect the positions of a geometry with `pos`:"
 
 # ╔═╡ 1c169153-5bc1-4a43-a416-1fb67c112ee5
-pos(geometry)
+pos(spheres)
 
 # ╔═╡ 63fdc0c5-fbcc-47a5-89ca-d9ff4666048f
 md"Other attributes are set similarly. Note the use of the `color_linear` function to convert color scales."
 
 # ╔═╡ 352ff661-4953-4bca-8ad9-3b89f51c34e4
-material!(geometry, Material(color=color_linear([0.25,0.5,0.9]), roughness=0.8))
+material!(spheres, Material(color=color_linear([0.25,0.5,0.9]), roughness=0.8))
 
 # ╔═╡ b8cc03c1-fd01-4ebf-96ac-2329461cd41a
 md"Creating a camera fit to the scene is achieved with the function fit_camera, which takes the type of camera as the first argument (although only Orthographic is currently implemented):"
