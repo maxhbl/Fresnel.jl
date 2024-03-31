@@ -1,13 +1,7 @@
 module Fresnel
 
 using PythonCall
-
-const fresnel = PythonCall.pynew()
 include("utils.jl")
-
-function __init__()
-    PythonCall.pycopy!(fresnel, pyimport("fresnel"))
-end
 
 export Scene, 
     camera, camera!, background_alpha, background_alpha!,
@@ -40,7 +34,36 @@ export Scene,
     color, color!, color_by_face, color_by_face!, angle, angle!,
     orientation, orientation!, enable!, disable!, remove!, extents,
 
-    linear_color, fit_camera, preview, pathtrace
+    color_linear, fit_camera, preview, pathtrace, image_array, pyglobals
+
+
+const fresnel = PythonCall.pynew()
+
+function __init__()
+    PythonCall.pycopy!(fresnel, pyimport("fresnel"))
+
+    @pydefaultconvertrule Orthographic fresnel.camera 
+    @pydefaultconvertrule Perspective fresnel.camera 
+    @pydefaultconvertrule Light fresnel.light 
+    @pydefaultconvertrule _LightProxy fresnel.light 
+    @pydefaultconvertrule _LightListProxy fresnel.light
+    @pydefaultconvertrule Material fresnel.material
+    @pydefaultconvertrule _MaterialProxy fresnel.material
+    @pydefaultconvertrule _OutlineMaterialProxy fresnel.material
+    @pydefaultconvertrule Cylinder fresnel.geometry
+    @pydefaultconvertrule Box fresnel.geometry
+    @pydefaultconvertrule Polygon fresnel.geometry
+    @pydefaultconvertrule Sphere fresnel.geometry
+    @pydefaultconvertrule Mesh fresnel.geometry
+    @pydefaultconvertrule ConvexPolyhedron fresnel.geometry
+    @pydefaultconvertrule Preview fresnel.tracer
+    @pydefaultconvertrule Path fresnel.tracer
+    @pydefaultconvertrule Scene fresnel
+    @pydefaultconvertrule Device fresnel
+
+    PythonCall.pyconvert_add_rule("fresnel.util:Array", Array, (T, x)->pyconvert(T, x.buf))
+    PythonCall.pyconvert_add_rule("fresnel.util:ImageArray", ImageArray, (T, x)->convert(T, x))
+end
 
 abstract type AbstractCamera end
 abstract type AbstractLight end
@@ -164,7 +187,6 @@ background_color(s::Scene) = pyconvertfield(s, "background_color", Vector)
 background_color!(s::Scene, val::AbstractVector) = pysetfield!(s, "background_color", val)
 background_alpha(s::Scene) = pyconvertfield(s, "background_alpha", Real)
 background_alpha!(s::Scene, val::Real) = pysetfield!(s, "background_alpha", val)
-background_alpha(s::Scene) = pyconvertfield(s, "lights", Real)
 lights(s::Scene) = pyconvertfield(s, "lights", _LightListProxy)
 lights!(s::Scene, val::AbstractVector{<:AbstractLight}) = pysetfield!(s, "lights", getfield(val, :pyobj))
 
@@ -173,10 +195,9 @@ mode(d::Device) = pyconvert(String, d.mode)
 
 @pywraptype ImageArray fresnel.util
 Base.display(iarr::ImageArray) = display(getfield(iarr, :pyobj))
+image_data(iarr::ImageArray) = pyconvert(Array, iarr.buf)
 
-PythonCall.pyconvert_add_rule("fresnel.util:Array", Array, (T, x)->pyconvert(T, x.buf))
-
-function linear_color(color)
+function color_linear(color)
     return pyconvert(Vector, fresnel.color.linear(color))
 end
 function fit_camera(::Type{Orthographic}, scene::Scene)

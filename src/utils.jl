@@ -27,8 +27,13 @@ macro pywraptype(type_name, module_name, supertype=Any)
         ispy(x::$type_name) = true
         Py(x::$type_name) = getfield(x, :pyobj)
         Base.convert(::Type{$type_name}, x) = $type_name(x)
-        PythonCall.pyconvert_add_rule($module_string * ":" * $type_string, $type_name, convert)
     end
+end
+
+macro pydefaultconvertrule(type_name, module_name)
+    type_string = string(type_name)
+    module_string = string(module_name)
+    return :(PythonCall.pyconvert_add_rule($module_string * ":" * $type_string, $type_name, convert))
 end
 
 function slice_assign!(A::Py, val::AbstractMatrix)
