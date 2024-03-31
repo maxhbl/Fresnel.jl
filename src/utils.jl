@@ -22,7 +22,7 @@ macro pywraptype(type_name, module_name, supertype=Any)
             return $type_name(pyobj)
         end
 
-        Base.show(io::Core.IO, x::$type_name) = println(io, getfield(x, :pyobj).__repr__())
+        # Base.show(io::Core.IO, x::$type_name) = print(io, getfield(x, :pyobj).__repr__())
         Base.getproperty(x::$type_name, f::Symbol) = pyconvert(Any, pygetattr(getfield(x, :pyobj), String(f)))
         ispy(x::$type_name) = true
         Py(x::$type_name) = getfield(x, :pyobj)

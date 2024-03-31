@@ -3,38 +3,38 @@ module Fresnel
 using PythonCall
 include("utils.jl")
 
-export Scene, 
+export Scene,
     camera, camera!, background_alpha, background_alpha!,
     background_color, background_color!, lights, lights!,
-    extents,
+    extents, 
 
     Device,
-    mode,
+    mode, 
 
     Tracer, Preview, Path,
-    seed, seed!, anti_alias, anti_alias!,
+    seed, seed!, anti_alias, anti_alias!, 
 
     Orthographic, Perspective,
     basis, pos, pos!, look_at, look_at!, up_dir, up_dir!,
-    height, height!, focal_length, focal_length!, f_stop, 
+    height, height!, focal_length, focal_length!, f_stop,
     f_stop!, focus_distance, focus_distance!, depth_of_field,
-    depth_of_field!, focus_on, focus_on!, vertical_FOV, vertical_FOV!,
+    depth_of_field!, focus_on, focus_on!, vertical_FOV, vertical_FOV!, 
 
-    Material, 
+    Material,
     solid, solid!, primitive_colormix, primitive_colormix!, color, color!,
     roughness, roughness!, specular, specular!, spec_trans, spec_trans!,
-    metal, metal!,    
+    metal, metal!, 
 
     Light,
-    direction, direction!, color, color!, theta, theta!,
+    direction, direction!, color, color!, theta, theta!, 
 
     Cylinder, Box, Polygon, Sphere, Mesh, ConvexPolyhedron,
-    material, material!, outline_material,outline_material!,
+    material, material!, outline_material, outline_material!,
     outline_width, outline_width!, box, box!, radius, radius!,
     color, color!, color_by_face, color_by_face!, angle, angle!,
-    orientation, orientation!, enable!, disable!, remove!, extents,
-
-    color_linear, fit_camera, preview, pathtrace, image_data
+    orientation, orientation!, enable!, disable!, remove!, extents, 
+    
+    color_linear, fit_camera, preview, pathtrace, image_data, add_geometry!
 
 
 const fresnel = PythonCall.pynew()
@@ -42,10 +42,10 @@ const fresnel = PythonCall.pynew()
 function __init__()
     PythonCall.pycopy!(fresnel, pyimport("fresnel"))
 
-    @pydefaultconvertrule Orthographic fresnel.camera 
-    @pydefaultconvertrule Perspective fresnel.camera 
-    @pydefaultconvertrule Light fresnel.light 
-    @pydefaultconvertrule _LightProxy fresnel.light 
+    @pydefaultconvertrule Orthographic fresnel.camera
+    @pydefaultconvertrule Perspective fresnel.camera
+    @pydefaultconvertrule Light fresnel.light
+    @pydefaultconvertrule _LightProxy fresnel.light
     @pydefaultconvertrule _LightListProxy fresnel.light
     @pydefaultconvertrule Material fresnel.material
     @pydefaultconvertrule _MaterialProxy fresnel.material
@@ -61,8 +61,8 @@ function __init__()
     @pydefaultconvertrule Scene fresnel
     @pydefaultconvertrule Device fresnel
 
-    PythonCall.pyconvert_add_rule("fresnel.util:Array", Array, (T, x)->pyconvert(T, x.buf))
-    PythonCall.pyconvert_add_rule("fresnel.util:ImageArray", ImageArray, (T, x)->convert(T, x))
+    PythonCall.pyconvert_add_rule("fresnel.util:Array", Array, (T, x) -> pyconvert(T, x.buf))
+    PythonCall.pyconvert_add_rule("fresnel.util:ImageArray", ImageArray, (T, x) -> convert(T, x))
 end
 
 abstract type AbstractCamera end
@@ -73,6 +73,8 @@ abstract type AbstractTracer end
 
 @pywraptype Orthographic fresnel.camera AbstractCamera
 @pywraptype Perspective fresnel.camera AbstractCamera
+Base.show(io::Core.IO, c::C) where {C<:AbstractCamera} = print(io, "$(C)Camera(position=$show(pos(c)), look_at=$(look_at(c)), up=$(up_dir(c)), height=$(height(c)))")
+Base.show(io::Core.IO, ::MIME"text/plain", c::C) where {C<:AbstractCamera} = print(io, "$C Camera \n    position: $(pos(c))\n    look_at: $(look_at(c))\n    up: $(up_dir(c))\n    height: $(height(c))")
 basis(c::AbstractCamera) = pyconvertfield(c, "basis", Array)
 pos(c::AbstractCamera) = pyconvertfield(c, "position", Vector)
 pos!(c::AbstractCamera, val::AbstractVector) = pysetfield!(c, "position", val)
@@ -98,6 +100,9 @@ vertical_FOV!(c::Perspective, val::Real) = pysetfield!(c, "vertical_field_of_vie
 @pywraptype Light fresnel.light AbstractLight
 @pywraptype _LightProxy fresnel.light AbstractLight
 @pywraptype _LightListProxy fresnel.light
+Base.show(io::Core.IO, l::AbstractLight) = print(io, "Light(direction=$(direction(l)), color=$(color(l)), θ=$(theta(l)))")
+Base.show(io::Core.IO, ::MIME"text/plain", l::AbstractLight) = print(io, "Light Source\n    direction: $(direction(l))\n    color: $(color(l))\n    θ: $(theta(l))")
+
 direction(l::AbstractLight) = pyconvertfield(l, "direction", Vector)
 direction!(l::AbstractLight, val::AbstractVector) = pysetfield!(l, "direction", val)
 color(l::AbstractLight) = pyconvertfield(l, "color", Vector)
@@ -108,9 +113,11 @@ theta!(l::AbstractLight, val::Real) = pysetfield!(l, "theta", val)
 @pywraptype Material fresnel.material AbstractMaterial
 @pywraptype _MaterialProxy fresnel.material AbstractMaterial
 @pywraptype _OutlineMaterialProxy fresnel.material AbstractMaterial
+Base.show(io::Core.IO, m::AbstractMaterial) = print(io, "Material(color=$(color(m)), roughness=$(roughness(m)), solid=$(solid(m)), metal=$(metal(m)), specular=$(specular(m)), spec_trans=$(spec_trans(m)), primitive_colormix=$(primitive_colormix(m)))")
+Base.show(io::Core.IO, ::MIME"text/plain", m::AbstractMaterial) = print(io, "Material\n    color: $(color(m))\n    roughness: $(roughness(m))\n    solid: $(solid(m))\n    metal: $(metal(m))\n    specular: $(specular(m))\n    spec trans: $(spec_trans(m))\n    primitive color mix: $(primitive_colormix(m))")
 solid(m::AbstractMaterial) = pyconvertfield(m, "solid", Real)
 solid!(m::AbstractMaterial, val::Real) = pysetfield!(m, "solid", val)
-primitive_colormix(m::AbstractMaterial) = pyconvertfield(m, "primitive_color_mix!", Real)
+primitive_colormix(m::AbstractMaterial) = pyconvertfield(m, "primitive_color_mix", Real)
 primitive_colormix!(m::AbstractMaterial, val::Real) = pysetfield!(m, "primitive_color_mix", val)
 color(m::AbstractMaterial) = pyconvertfield(m, "color", Vector)
 color!(m::AbstractMaterial, val::AbstractVector) = pysetfield!(m, "color", val)
@@ -129,6 +136,8 @@ metal!(m::AbstractMaterial, val::Real) = pysetfield!(m, "metal", val)
 @pywraptype Sphere fresnel.geometry AbstractGeometry
 @pywraptype Mesh fresnel.geometry AbstractGeometry
 @pywraptype ConvexPolyhedron fresnel.geometry AbstractGeometry
+Base.show(io::Core.IO, g::G) where {G<:AbstractGeometry} = print(io, "$G(position=$(pos(g))")
+Base.show(io::Core.IO, ::MIME"text/plain", g::G) where {G<:AbstractGeometry} = print(io, "$G\n    position: $(pos(g))")
 enable!(g::AbstractGeometry) = pyconvert(Any, g.enable())
 disable!(g::AbstractGeometry) = pyconvert(Any, g.disable())
 remove!(g::AbstractGeometry) = pyconvert(Any, g.remove())
@@ -174,12 +183,16 @@ color_by_face!(g::ConvexPolyhedron, val::AbstractVector) = pysetfield!(g, "color
 
 @pywraptype Preview fresnel.tracer AbstractTracer
 @pywraptype Path fresnel.tracer AbstractTracer
+Base.show(io::Core.IO, t::T) where {T<:AbstractTracer} = print(io, "$(T)Tracer(seed=$(seed(t)))")
 seed(t::AbstractTracer) = pyconvertfield(t, "seed", Number)
 seed!(t::AbstractTracer, val::Number) = pysetfield!(t, "seed", val)
-anti_alias(t::AbstractTracer) = pyconvertfield(t, "anti_alias", Bool)
+anti_alias(t::Preview) = pyconvertfield(t, "anti_alias", Bool)
 anti_alias!(t::Preview, val::Bool) = pysetfield!(t, "anti_alias", val)
 
 @pywraptype Scene fresnel
+Base.show(io::Core.IO, s::Scene) = print(io, "Scene(N=$(length(geometry(s))), camera=$(typeof(camera(s))))")
+Base.show(io::Core.IO, ::MIME"text/plain", s::Scene) = print(io, "Scene\n")
+
 extents(s::Scene) = pyconvert(Array, s.get_extents())
 camera(s::Scene) = pyconvertfield(s, "camera", AbstractCamera)
 camera!(s::Scene, val::AbstractCamera) = pysetfield!(s, "camera", getfield(val, :pyobj))
@@ -189,6 +202,7 @@ background_alpha(s::Scene) = pyconvertfield(s, "background_alpha", Real)
 background_alpha!(s::Scene, val::Real) = pysetfield!(s, "background_alpha", val)
 lights(s::Scene) = pyconvertfield(s, "lights", _LightListProxy)
 lights!(s::Scene, val::AbstractVector{<:AbstractLight}) = pysetfield!(s, "lights", getfield(val, :pyobj))
+geometry(s::Scene) = pyconvertfield(s, "geometry", Vector{<:AbstractGeometry})
 
 @pywraptype Device fresnel
 mode(d::Device) = pyconvert(String, d.mode)
@@ -207,7 +221,27 @@ function preview(scene::Scene; kwargs...)
     return pyconvert(ImageArray, fresnel.preview(scene; kwargs...))
 end
 function pathtrace(scene::Scene; kwargs...)
-   return pyconvert(ImageArray, fresnel.pathtrace(scene; kwargs...))
+    return pyconvert(ImageArray, fresnel.pathtrace(scene; kwargs...))
+end
+function add_geometry!(scene::Scene, geometry_type::Symbol; kwargs...)
+    if geometry_type == :cylinder
+        g = Cylinder(scene; kwargs...)
+    elseif geometry_type == :box
+        g = Box(scene; kwargs...)
+    elseif geometry_type == :box
+        g = Box(scene; kwargs...)
+    elseif geometry_type == :polygon
+        g = Polygon(scene; kwargs...)
+    elseif geometry_type == :sphere
+        g = Sphere(scene; kwargs...)
+    elseif geometry_type == :mesh
+        g = Mesh(scene; kwargs...)
+    elseif geometry_type == :convex_polyhedron
+        g = ConvexPolyhedron(scene; kwargs...)
+    else
+        error("$geometry_type is not a valid geometry.")
+    end
+    return g
 end
 
 end
