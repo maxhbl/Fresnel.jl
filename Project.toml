@@ -1,3 +1,8 @@
+name = "Fresnel"
+uuid = "8c23b888-cfb8-4d54-9983-c00fe6e896d2"
+authors = ["Maximilian HUEBL <maximilian.huebl@ist.ac.at>"]
+version = "0.1.0"
+
 [deps]
 CondaPkg = "992eb4ea-22a4-4c89-a5bb-47a3300528ab"
 PythonCall = "6099a3de-0909-46bc-b1f4-468b9a2dfc0d"
