@@ -1,5 +1,5 @@
 # Fresnel.jl
-Fresnel.jl is a simple wrapper around the [fresnel](https://github.com/glotzerlab/fresnel) raytracer (v0.13.5) written in Python/C++. The Julia interface here closely follows the Python version, the only difference being that the 'pythonic' way of accessing object attributes (e.g. `object.attribute`) is replaced with the idiomatic Julia way, which is to use methods: Use `attribute(object)` to retrieve an attribute and `attribute!(object, value)` to modify it. Keeping this minor difference aside, the original [Python docs](https://fresnel.readthedocs.io/en/v0.13.5/index.html) should largely apply to this Julia wrapper as well.
+Fresnel.jl is a simple wrapper around the [fresnel](https://github.com/glotzerlab/fresnel) raytracer (v0.13.5) written in Python/C++. The Julia interface here closely follows the Python version, the only difference being that object attributes are accessed using methods: Use `attribute(object)` to retrieve an attribute and `attribute!(object, value)` to modify it. Keeping this minor difference aside, the original [Python docs](https://fresnel.readthedocs.io/en/v0.13.5/index.html) should largely apply to this Julia wrapper as well.
 ## Example
 This is a recreation of the original [introduction notebook](https://github.com/glotzerlab/fresnel-examples/blob/master/00-Basic-tutorials/00-Introduction.ipynb) in Julia.
 
