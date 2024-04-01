@@ -37,7 +37,4 @@ We can then render an image of our scene with `preview` or `pathtrace`:
 ```
 image = preview(scene)
 ```
-Rendering functions like `preview` and `pathtrace` return an `ImageArray`, which is displayed as an image in most Julia environments. The value of the array can be accessed via `image_array(image)`, as below. If your environment does not automatically display an image, you can use the array data to manually create one.
-```
-arr = image_data(image)
-```
+Rendering functions like `preview` and `pathtrace` return an `ImageArray`, which is displayed as an image in most Julia environments. The value of the array can be accessed via `image_array(image)`. If your environment does not automatically display an image, you can use the array data to manually create one.
