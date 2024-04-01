@@ -16,14 +16,14 @@ spheres = add_geometry!(scene, :sphere, N=8, radius=1.0)
 ```
 Note that to avoid collisions with `Base.position`, methods to access position attributes are named `pos` / `pos!`. Below we set the positions of the eight spheres using `pos!`:
 ```
-pos!(spheres, [  1  1  1;
-		 1  1 -1;
-		 1 -1  1;
-		 1 -1 -1;
-		-1  1  1;
-		-1  1 -1;
-		-1 -1  1;
-		-1 -1 -1])
+pos!(spheres, [ 1  1  1;
+		1  1 -1;
+		1 -1  1;
+		1 -1 -1;
+               -1  1  1;
+	       -1  1 -1;
+               -1 -1  1;
+               -1 -1 -1])
 ```
 Other attributes are set similarly. Note the use of the `color_linear` function to convert color scales.
 ```
