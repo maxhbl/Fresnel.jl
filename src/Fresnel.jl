@@ -208,7 +208,9 @@ geometry(s::Scene) = pyconvertfield(s, "geometry", Vector{<:AbstractGeometry})
 mode(d::Device) = pyconvert(String, d.mode)
 
 @pywraptype ImageArray fresnel.util
-Base.display(iarr::ImageArray) = display(getfield(iarr, :pyobj))
+Base.show(io::Core.IO, iarr::ImageArray) = print("ImageArray")
+Base.show(io::Core.IO, m::MIME"text/plain", iarr::ImageArray) = show(io, m, image_data(iarr))
+Base.show(io::Core.IO, m::MIME"image/png", iarr::ImageArray) = show(io, m, getfield(iarr, :pyobj))
 image_data(iarr::ImageArray) = pyconvert(Array, iarr.buf)
 
 function color_linear(color)
